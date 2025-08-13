@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K-TIRADS Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        fieldset { border: 1px solid #CBD5E0; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem; }
+        legend { font-weight: 600; padding: 0 0.5rem; color: #2D3748; }
+        .btn { background-color: #2C5282; color: white; font-weight: bold; padding: 0.75rem 1rem; border-radius: 0.375rem; width: 100%; transition: background-color 0.2s; }
+        .btn:hover { background-color: #2A4365; }
+        .radio-label { display: flex; align-items: center; padding: 0.5rem; cursor: pointer; }
+        .radio-label input { margin-right: 0.75rem; }
+        .input-label { font-weight: 500; color: #4A5568; }
+        .input-field { border-radius: 0.375rem; border: 1px solid #E2E8F0; padding: 0.5rem 0.75rem; width: 100%; }
+        .result-box { margin-top: 1rem; padding: 1rem; border-radius: 0.5rem; }
+        .result-title { font-weight: bold; font-size: 1.125rem; }
+        .result-subtitle { font-weight: 500; margin-top: 0.75rem; }
+        .result-text { margin-top: 0.25rem; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-3xl">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-700">K-TIRADS Calculator</h1>
+            <p class="text-md text-gray-500 mt-2">갑상선 결절 위험도 및 조치 기준 평가</p>
+        </header>
+
+        <main id="calculator-form">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 초음파 소견 -->
+                <fieldset class="md:col-span-2">
+                    <legend class="text-lg">초음파 소견</legend>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 mt-4">
+                        <div>
+                            <p class="input-label mb-2">1. 구성 (Composition)</p>
+                            <div class="space-y-2">
+                                <label class="radio-label"><input type="radio" name="composition" value="spongiform" checked> Spongiform</label>
+                                <label class="radio-label"><input type="radio" name="composition" value="cystic"> Purely cystic</label>
+                                <label class="radio-label"><input type="radio" name="composition" value="partially_cystic"> Partially cystic</label>
+                                <label class="radio-label"><input type="radio" name="composition" value="solid"> Solid or Almost entirely solid</label>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="input-label mb-2">2. 에코 (Echogenicity)</p>
+                            <div class="space-y-2">
+                                <label class="radio-label"><input type="radio" name="echogenicity" value="anechoic" checked> Anechoic</label>
+                                <label class="radio-label"><input type="radio" name="echogenicity" value="iso_hyper"> Iso- or Hyperechoic</label>
+                                <label class="radio-label"><input type="radio" name="echogenicity" value="hypo"> Hypoechoic</label>
+                                <label class="radio-label"><input type="radio" name="echogenicity" value="marked_hypo"> Marked hypoechoic</label>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <!-- 악성 의심 소견 -->
+                <fieldset class="md:col-span-2">
+                    <legend class="text-lg">악성 의심 초음파 소견</legend>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 mt-4">
+                        <label class="flex items-center p-2"><input type="checkbox" id="suspicious_foci" class="h-5 w-5 mr-3"><span>미세석회화 (Punctate echogenic foci)</span></label>
+                        <label class="flex items-center p-2"><input type="checkbox" id="suspicious_shape" class="h-5 w-5 mr-3"><span>앞뒤로 긴 모양 (Taller-than-wide)</span></label>
+                        <label class="flex items-center p-2"><input type="checkbox" id="suspicious_margin" class="h-5 w-5 mr-3"><span>침상/소엽상 경계 (Spiculated/Microlobulated)</span></label>
+                    </div>
+                </fieldset>
+
+                <!-- 결절 크기 -->
+                <fieldset class="md:col-span-2">
+                    <legend class="text-lg">결절 크기</legend>
+                    <div class="mt-4">
+                        <label for="size" class="input-label block mb-1">가장 긴 직경 (cm)</label>
+                        <input type="number" id="size" class="input-field max-w-xs" placeholder="예: 1.2">
+                    </div>
+                </fieldset>
+            </div>
+            
+            <button id="calc-button" class="btn mt-2">결과 확인</button>
+
+            <div id="result-container" class="mt-8"></div>
+        </main>
+    </div>
+
+    <script>
+        document.getElementById('calc-button').addEventListener('click', () => {
+            const composition = document.querySelector('input[name="composition"]:checked').value;
+            const echogenicity = document.querySelector('input[name="echogenicity"]:checked').value;
+            const foci = document.getElementById('suspicious_foci').checked;
+            const shape = document.getElementById('suspicious_shape').checked;
+            const margin = document.getElementById('suspicious_margin').checked;
+            const size = parseFloat(document.getElementById('size').value);
+
+            if (isNaN(size) || size <= 0) {
+                alert("결절 크기를 올바르게 입력해주세요.");
+                return;
+            }
+
+            let category = 0;
+            let risk = "";
+            let action = "";
+            let color = "gray";
+
+            const hasSuspiciousFinding = foci || shape || margin;
+
+            // K-TIRADS 2021 Guideline Logic (Corrected)
+            if (composition === 'spongiform' || composition === 'cystic') {
+                category = 2; // Benign
+            } else if (hasSuspiciousFinding) {
+                // Any composition/echogenicity with one of the 3 suspicious findings is K-TIRADS 5
+                category = 5; // High Suspicion
+            } else {
+                // No suspicious findings from this point on
+                if ((composition === 'solid' && echogenicity === 'marked_hypo') ||
+                    (composition === 'solid' && echogenicity === 'hypo') ||
+                    (composition === 'partially_cystic' && (echogenicity === 'hypo' || echogenicity === 'marked_hypo'))) {
+                    category = 4; // Intermediate Suspicion
+                } else if ((composition === 'partially_cystic' && echogenicity === 'iso_hyper') || 
+                           (composition === 'solid' && echogenicity === 'iso_hyper')) {
+                    category = 3; // Low Suspicion
+                } else {
+                    category = 3; // Default for other combinations
+                }
+            }
+            
+            // K-TIRADS 1 is 'No nodule', so we start from 2
+            if (category === 2) {
+                risk = "< 2%";
+                action = "세침흡인검사(FNA) 불필요";
+                color = "green";
+            } else if (category === 3) {
+                risk = "2-5%";
+                if (size >= 2.0) {
+                    action = `크기(${size}cm)가 2.0cm 이상이므로 FNA 고려`;
+                } else {
+                    action = `크기(${size}cm)가 2.0cm 미만이므로 추적관찰`;
+                }
+                color = "blue";
+            } else if (category === 4) {
+                risk = "5-20%";
+                if (size >= 1.5) {
+                    action = `크기(${size}cm)가 1.5cm 이상이므로 FNA 고려`;
+                } else {
+                    action = `크기(${size}cm)가 1.5cm 미만이므로 추적관찰`;
+                }
+                color = "yellow";
+            } else if (category === 5) {
+                risk = "> 20%";
+                if (size >= 1.0) {
+                    action = `크기(${size}cm)가 1.0cm 이상이므로 FNA 고려`;
+                } else {
+                    action = `크기(${size}cm)가 1.0cm 미만이므로 추적관찰`;
+                }
+                color = "red";
+            }
+
+            const resultContainer = document.getElementById('result-container');
+            resultContainer.innerHTML = `
+                <div class="result-box bg-${color}-100 border border-${color}-300">
+                    <h2 class="result-title text-${color}-800">K-TIRADS ${category}</h2>
+                    <p class="result-subtitle text-${color}-700">악성 위험도 (Malignancy Risk)</p>
+                    <p class="result-text text-${color}-900">${risk}</p>
+                    <p class="result-subtitle text-${color}-700">권고 조치 (Recommendation)</p>
+                    <p class="result-text text-${color}-900">${action}</p>
+                </div>
+            `;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARISCAT Score Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        fieldset { border: 1px solid #CBD5E0; border-radius: 0.5rem; padding: 1rem; }
+        legend { font-weight: 600; padding: 0 0.5rem; color: #2D3748; }
+        .input-label { font-weight: 500; color: #4A5568; }
+        .input-field, .select-field { border-radius: 0.375rem; border: 1px solid #E2E8F0; padding: 0.5rem 0.75rem; width: 100%; transition: border-color 0.2s; }
+        .input-field:focus, .select-field:focus { outline: none; border-color: #4299E1; box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.4); }
+        .btn { background-color: #005A9C; color: white; font-weight: bold; padding: 0.75rem 1rem; border-radius: 0.375rem; width: 100%; transition: background-color 0.2s; }
+        .btn:hover { background-color: #003E6B; }
+        .checkbox-label { display: flex; align-items: center; padding: 0.5rem; }
+        .checkbox-label input { height: 1.25rem; width: 1.25rem; color: #005A9C; }
+        .checkbox-label span { margin-left: 0.75rem; color: #4A5568; }
+        .points { font-size: 0.8rem; color: #718096; margin-left: auto; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-2xl">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-700">ARISCAT Score Calculator</h1>
+            <p class="text-md text-gray-500 mt-2">수술 후 폐 합병증(PPCs) 위험도 예측</p>
+        </header>
+
+        <main id="calculator-form">
+            <fieldset>
+                <legend class="text-lg">위험 인자</legend>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 mt-4">
+                    <!-- Age -->
+                    <div>
+                        <label for="age" class="input-label block mb-1">나이 (세)</label>
+                        <input type="number" id="age" class="input-field" placeholder="나이를 입력하세요">
+                    </div>
+                    <!-- Preoperative SpO2 -->
+                    <div>
+                        <label for="spo2" class="input-label block mb-1">수술 전 최저 SpO₂ (%)</label>
+                        <input type="number" id="spo2" class="input-field" placeholder="산소포화도 입력">
+                    </div>
+                    <!-- Surgical Incision -->
+                    <div>
+                        <label for="incision" class="input-label block mb-1">수술 절개 부위</label>
+                        <select id="incision" class="select-field">
+                            <option value="peripheral">말초 또는 기타</option>
+                            <option value="upper_abdomen">상복부 수술 (Upper Abdominal)</option>
+                            <option value="thoracic">개흉술 (Intrathoracic)</option>
+                        </select>
+                    </div>
+                    <!-- Duration of Surgery -->
+                    <div>
+                        <label for="duration" class="input-label block mb-1">수술 시간</label>
+                        <select id="duration" class="select-field">
+                            <option value="under_2h">< 2 시간</option>
+                            <option value="2_to_3h">2 - 3 시간</option>
+                            <option value="over_3h">> 3 시간</option>
+                        </select>
+                    </div>
+                    <!-- Other factors -->
+                    <div class="md:col-span-2 space-y-2">
+                        <label class="checkbox-label"><input type="checkbox" id="infection"><span>최근 1개월 내 호흡기 감염</span><span class="points">+17</span></label>
+                        <label class="checkbox-label"><input type="checkbox" id="anemia"><span>수술 전 빈혈 (Hb ≤ 10 g/dL)</span><span class="points">+11</span></label>
+                        <label class="checkbox-label"><input type="checkbox" id="emergency"><span>응급 수술</span><span class="points">+8</span></label>
+                    </div>
+                </div>
+            </fieldset>
+            
+            <button id="calc-button" class="btn mt-8">점수 계산</button>
+
+            <fieldset class="mt-8">
+                <legend class="text-lg">계산 결과</legend>
+                <div id="result-text" class="mt-2 p-4 bg-gray-100 rounded-lg min-h-[120px] whitespace-pre-wrap font-mono text-base">결과가 여기에 표시됩니다.</div>
+            </fieldset>
+        </main>
+    </div>
+
+    <script>
+        document.getElementById('calc-button').addEventListener('click', () => {
+            let score = 0;
+
+            // 1. Age
+            const age = parseInt(document.getElementById('age').value, 10);
+            if (isNaN(age) || age <= 0) {
+                alert("나이를 올바르게 입력해주세요.");
+                return;
+            }
+            if (age > 80) score += 16;
+            else if (age >= 51) score += 3;
+
+            // 2. Preoperative SpO2
+            const spo2 = parseInt(document.getElementById('spo2').value, 10);
+             if (isNaN(spo2) || spo2 < 0 || spo2 > 100) {
+                alert("산소포화도를 올바르게 입력해주세요 (0-100).");
+                return;
+            }
+            if (spo2 <= 90) score += 24;
+            else if (spo2 <= 95) score += 8;
+
+            // 3. Respiratory Infection
+            if (document.getElementById('infection').checked) score += 17;
+
+            // 4. Preoperative Anemia
+            if (document.getElementById('anemia').checked) score += 11;
+
+            // 5. Surgical Incision
+            const incision = document.getElementById('incision').value;
+            if (incision === 'thoracic') score += 24;
+            else if (incision === 'upper_abdomen') score += 15;
+
+            // 6. Duration of Surgery
+            const duration = document.getElementById('duration').value;
+            if (duration === 'over_3h') score += 23;
+            else if (duration === '2_to_3h') score += 16;
+
+            // 7. Emergency Procedure
+            if (document.getElementById('emergency').checked) score += 8;
+
+            let riskLevel = "";
+            let incidence = "";
+            let recommendation = "";
+
+            if (score < 26) {
+                riskLevel = "저위험군 (Low Risk)";
+                incidence = "1.6%";
+                recommendation = "[평가] 수술 후 폐 합병증 발생 위험이 낮습니다.\n" +
+                               "[조치] 표준적인 수술 후 관리를 진행하며, 기본적인 폐 기능 강화 운동(심호흡, 기침)을 교육합니다.";
+            } else if (score <= 44) {
+                riskLevel = "중위험군 (Intermediate Risk)";
+                incidence = "13.3%";
+                recommendation = "[평가] 수술 후 폐 합병증 발생 위험이 중등도로 존재합니다.\n" +
+                               "[조치] 폐 합병증 예방 전략을 적극적으로 고려해야 합니다. 강화 폐활량계(Incentive Spirometry) 사용, 흉부 물리치료, 조기 보행 등을 계획하고 시행하는 것이 권장됩니다.";
+            } else {
+                riskLevel = "고위험군 (High Risk)";
+                incidence = "42.1%";
+                recommendation = "[평가] 수술 후 폐 합병증 발생 위험이 매우 높습니다.\n" +
+                               "[조치] 강력한 예방 조치가 필요합니다. 가능한 경우 수술을 연기하여 호흡기 상태를 최적화하고, 수술 후 중환자실에서의 집중 관리를 계획할 수 있습니다. 호흡기내과 협진을 고려합니다.";
+            }
+
+            const resultStr = 
+                `ARISCAT Score: ${score} 점\n` +
+                `------------------------------------\n` +
+                `위험도 분류: ${riskLevel}\n` +
+                `PPCs 발생률: ${incidence}\n\n` +
+                `${recommendation}`;
+
+            document.getElementById('result-text').textContent = resultStr;
+        });
+    </script>
+</body>
+</html>

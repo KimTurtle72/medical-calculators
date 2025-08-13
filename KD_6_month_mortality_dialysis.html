@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>6-Month Mortality on HD Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        fieldset { border: 1px solid #CBD5E0; border-radius: 0.5rem; padding: 1rem; }
+        legend { font-weight: 600; padding: 0 0.5rem; color: #2D3748; }
+        .btn { background-color: #5A67D8; color: white; font-weight: bold; padding: 0.75rem 1rem; border-radius: 0.375rem; width: 100%; transition: background-color 0.2s; }
+        .btn:hover { background-color: #4C51BF; }
+        .checkbox-label { display: flex; align-items: center; margin-bottom: 0.75rem; padding: 0.5rem; border-radius: 0.375rem; transition: background-color 0.2s; }
+        .checkbox-label:hover { background-color: #EBF4FF; }
+        .checkbox-label input { height: 1.25rem; width: 1.25rem; color: #5A67D8; }
+        .checkbox-label span { margin-left: 0.75rem; color: #4A5568; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-2xl">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-700">혈액투석 환자 6개월 사망률 예측</h1>
+            <p class="text-md text-gray-500 mt-2">단순화된 예후 예측 모델</p>
+        </header>
+
+        <main id="calculator-form">
+            <fieldset>
+                <legend class="text-lg">위험 인자</legend>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 mt-4">
+                    <label class="checkbox-label"><input type="checkbox" data-score="1"><span>나이 ≥ 75세</span></label>
+                    <label class="checkbox-label"><input type="checkbox" data-score="1"><span>혈청 알부민 < 3.5 g/dL</span></label>
+                    <label class="checkbox-label"><input type="checkbox" data-score="1"><span>보행 불가 (Non-ambulatory)</span></label>
+                    <label class="checkbox-label"><input type="checkbox" data-score="1"><span>울혈성 심부전 (CHF)</span></label>
+                    <label class="checkbox-label"><input type="checkbox" data-score="1"><span>관상동맥 질환 (CAD)</span></label>
+                    <label class="checkbox-label"><input type="checkbox" data-score="1"><span>뇌혈관 질환 (CVA)</span></label>
+                     <label class="checkbox-label"><input type="checkbox" data-score="1"><span>말초혈관 질환 (PVD)</span></label>
+                    <label class="checkbox-label"><input type="checkbox" data-score="1"><span>기타 중증 동반질환 (암, 치매 등)</span></label>
+                </div>
+            </fieldset>
+            
+            <button id="calc-button" class="btn mt-8">위험도 계산</button>
+
+            <fieldset class="mt-8">
+                <legend class="text-lg">계산 결과</legend>
+                <div id="result-text" class="mt-2 p-4 bg-gray-100 rounded-lg min-h-[120px] whitespace-pre-wrap font-mono text-base">결과가 여기에 표시됩니다.</div>
+            </fieldset>
+        </main>
+    </div>
+
+    <script>
+        document.getElementById('calc-button').addEventListener('click', () => {
+            let score = 0;
+            document.querySelectorAll('#calculator-form input[type="checkbox"]:checked').forEach(cb => {
+                score += parseInt(cb.dataset.score, 10);
+            });
+
+            let riskLevel = "";
+            let mortalityRate = "";
+
+            if (score <= 1) { riskLevel = "저위험군 (Low Risk)"; mortalityRate = "약 4%"; }
+            else if (score <= 3) { riskLevel = "중위험군 (Intermediate Risk)"; mortalityRate = "약 16%"; }
+            else { riskLevel = "고위험군 (High Risk)"; mortalityRate = "약 50%"; }
+
+            const resultStr = 
+                `Risk Score: ${score} 점\n` +
+                `------------------------------------\n` +
+                `위험도 분류: ${riskLevel}\n` +
+                `6개월 예측 사망률: ${mortalityRate}\n\n` +
+                `* 본 결과는 통계적 예측이며, 환자 개개인의 예후와 다를 수 있습니다.`;
+
+            document.getElementById('result-text').textContent = resultStr;
+        });
+    </script>
+</body>
+</html>

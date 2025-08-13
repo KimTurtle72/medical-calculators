@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHA₂DS₂-VASc Score Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        fieldset { border: 1px solid #CBD5E0; border-radius: 0.5rem; padding: 1rem; }
+        legend { font-weight: 600; padding: 0 0.5rem; color: #2D3748; }
+        .btn { background-color: #553C9A; color: white; font-weight: bold; padding: 0.75rem 1rem; border-radius: 0.375rem; width: 100%; transition: background-color 0.2s; }
+        .btn:hover { background-color: #44337A; }
+        .checkbox-label { display: flex; align-items: center; margin-bottom: 0.75rem; padding: 0.5rem; border-radius: 0.375rem; transition: background-color 0.2s; }
+        .checkbox-label:hover { background-color: #FBFBFB; }
+        .checkbox-label input { height: 1.25rem; width: 1.25rem; color: #553C9A; }
+        .checkbox-label span { margin-left: 0.75rem; color: #4A5568; }
+        .mnemonic { font-weight: bold; color: #553C9A; display: inline-block; width: 1.5rem; text-align: center; }
+        .points { font-size: 0.8rem; color: #718096; margin-left: auto; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-2xl">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-700">CHA₂DS₂-VASc Score Calculator</h1>
+            <p class="text-md text-gray-500 mt-2">심방세동 환자 뇌졸중 위험도 평가</p>
+        </header>
+
+        <main id="calculator-form">
+            <fieldset>
+                <legend class="text-lg">위험 인자</legend>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 mt-4">
+                    <label class="checkbox-label"><span class="mnemonic">C</span><input type="checkbox" data-score="1"><span>울혈성 심부전 (CHF)</span><span class="points">+1</span></label>
+                    <label class="checkbox-label"><span class="mnemonic">H</span><input type="checkbox" data-score="1"><span>고혈압 (Hypertension)</span><span class="points">+1</span></label>
+                    <label class="checkbox-label"><span class="mnemonic">A₂</span><input type="checkbox" data-score="2"><span>나이 ≥ 75세 (Age)</span><span class="points">+2</span></label>
+                    <label class="checkbox-label"><span class="mnemonic">D</span><input type="checkbox" data-score="1"><span>당뇨 (Diabetes)</span><span class="points">+1</span></label>
+                    <label class="checkbox-label"><span class="mnemonic">S₂</span><input type="checkbox" data-score="2"><span>뇌졸중/TIA 병력 (Stroke)</span><span class="points">+2</span></label>
+                    <label class="checkbox-label"><span class="mnemonic">V</span><input type="checkbox" data-score="1"><span>혈관 질환 병력 (Vascular)</span><span class="points">+1</span></label>
+                    <label class="checkbox-label"><span class="mnemonic">A</span><input type="checkbox" data-score="1"><span>나이 65-74세 (Age)</span><span class="points">+1</span></label>
+                    <label class="checkbox-label"><span class="mnemonic">Sc</span><input type="checkbox" data-score="1"><span>여성 (Sex category)</span><span class="points">+1</span></label>
+                </div>
+            </fieldset>
+            
+            <button id="calc-button" class="btn mt-8">점수 계산</button>
+
+            <fieldset class="mt-8">
+                <legend class="text-lg">계산 결과</legend>
+                <div id="result-text" class="mt-2 p-4 bg-gray-100 rounded-lg min-h-[120px] whitespace-pre-wrap font-mono text-base">결과가 여기에 표시됩니다.</div>
+            </fieldset>
+        </main>
+    </div>
+
+    <script>
+        document.getElementById('calc-button').addEventListener('click', () => {
+            let score = 0;
+            document.querySelectorAll('#calculator-form input[type="checkbox"]:checked').forEach(cb => {
+                score += parseInt(cb.dataset.score, 10);
+            });
+
+            const strokeRates = {
+                0: "0%", 1: "1.3%", 2: "2.2%", 3: "3.2%", 4: "4.0%",
+                5: "6.7%", 6: "9.8%", 7: "9.6%", 8: "12.5%", 9: "15.2%"
+            };
+            
+            let strokeRate = strokeRates[score] || ">15.2%";
+            let interpretation = "항응고제 치료를 고려해야 합니다.";
+            if (score === 0) {
+                interpretation = "뇌졸중 저위험군입니다.";
+            } else if (score === 1) {
+                interpretation = "뇌졸중 저-중등도 위험군으로, 항응고제 치료를 고려할 수 있습니다.";
+            }
+
+            const resultStr = 
+                `CHA₂DS₂-VASc Score: ${score} 점\n` +
+                `------------------------------------\n` +
+                `연간 뇌졸중 발생률: ${strokeRate}\n` +
+                `해석: ${interpretation}`;
+
+            document.getElementById('result-text').textContent = resultStr;
+        });
+    </script>
+</body>
+</html>

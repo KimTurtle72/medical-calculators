@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drug Infusion Rate Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .tab-button {
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem 0.5rem 0 0;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            border-bottom: none;
+        }
+        .tab-button.active {
+            background-color: white;
+            border-color: #E2E8F0;
+            color: #2D3748;
+        }
+        .tab-button:not(.active) {
+            background-color: #F7FAFC;
+            color: #718096;
+        }
+        .tab-panel {
+            display: none;
+        }
+        .tab-panel.active {
+            display: block;
+        }
+        .input-label { font-weight: 500; color: #4A5568; }
+        .input-field { border-radius: 0.375rem; border: 1px solid #E2E8F0; padding: 0.5rem 0.75rem; width: 100%; }
+        .btn { background-color: #38A169; color: white; font-weight: bold; padding: 0.75rem 1rem; border-radius: 0.375rem; width: 100%; transition: background-color 0.2s; }
+        .btn:hover { background-color: #2F855A; }
+        .info-box { background-color: #F7FAFC; border: 1px solid #E2E8F0; border-radius: 0.375rem; padding: 1rem; margin-top: 1.5rem; }
+        .info-box h3 { font-weight: 600; color: #2D3748; margin-bottom: 0.5rem; }
+        .info-box ul { list-style-position: inside; color: #4A5568; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-2xl">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-700">Drug Infusion Rate Calculator</h1>
+            <p class="text-md text-gray-500 mt-2">혈압상승제, 강심제 및 혈압강하제 주입 속도 계산</p>
+        </header>
+
+        <main>
+            <!-- Tabs -->
+            <div id="tabs" class="flex border-b border-gray-200">
+                <button class="tab-button active" onclick="changeTab(event, 'dobutamine')">Dobutamine</button>
+                <button class="tab-button" onclick="changeTab(event, 'dopamine')">Dopamine</button>
+                <button class="tab-button" onclick="changeTab(event, 'norepinephrine')">Norepinephrine</button>
+                <button class="tab-button" onclick="changeTab(event, 'labetalol')">Labetalol</button>
+            </div>
+
+            <!-- Tab Panels -->
+            <div id="tab-content" class="bg-white p-6 rounded-b-lg shadow">
+                <!-- Dobutamine Panel -->
+                <div id="dobutamine" class="tab-panel active">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="dobu_weight" class="input-label block mb-1">환자 체중 (kg)</label>
+                            <input type="number" id="dobu_weight" class="input-field" value="70">
+                        </div>
+                        <div>
+                            <label for="dobu_dose" class="input-label block mb-1">목표 용량 (mcg/kg/min)</label>
+                            <input type="number" id="dobu_dose" class="input-field" value="5">
+                        </div>
+                        <div>
+                            <label for="dobu_fluid" class="input-label block mb-1">총 수액량 (ml)</label>
+                            <input type="number" id="dobu_fluid" class="input-field" value="250">
+                        </div>
+                        <div>
+                            <label for="dobu_drug" class="input-label block mb-1">총 약물량 (mg)</label>
+                            <input type="number" id="dobu_drug" class="input-field" value="250">
+                        </div>
+                    </div>
+                    <div class="info-box">
+                        <h3>약물 정보 (Dobutamine)</h3>
+                        <ul class="text-sm space-y-1">
+                            <li><strong>효과:</strong> 주로 심근 수축력을 증가시키는 강심제 (β1 작용)</li>
+                            <li><strong>시작 용량:</strong> 2.5 mcg/kg/min</li>
+                            <li><strong>치료 용량:</strong> 2.5 - 20 mcg/kg/min</li>
+                            <li><strong>최대 용량:</strong> 40 mcg/kg/min (일반적으로 20 이상은 권장되지 않음)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Dopamine Panel -->
+                <div id="dopamine" class="tab-panel">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="dopa_weight" class="input-label block mb-1">환자 체중 (kg)</label>
+                            <input type="number" id="dopa_weight" class="input-field" value="70">
+                        </div>
+                        <div>
+                            <label for="dopa_dose" class="input-label block mb-1">목표 용량 (mcg/kg/min)</label>
+                            <input type="number" id="dopa_dose" class="input-field" value="5">
+                        </div>
+                        <div>
+                            <label for="dopa_fluid" class="input-label block mb-1">총 수액량 (ml)</label>
+                            <input type="number" id="dopa_fluid" class="input-field" value="500">
+                        </div>
+                        <div>
+                            <label for="dopa_drug" class="input-label block mb-1">총 약물량 (mg)</label>
+                            <input type="number" id="dopa_drug" class="input-field" value="400">
+                        </div>
+                    </div>
+                    <div class="info-box">
+                        <h3>약물 정보 (Dopamine)</h3>
+                        <ul class="text-sm space-y-1">
+                            <li><strong>효과:</strong> 용량에 따라 신혈류 증가, 심박출량 증가, 혈관 수축 등 다양한 작용</li>
+                            <li><strong>저용량 (신장):</strong> 1-3 mcg/kg/min (현재 임상적 유용성은 논란 있음)</li>
+                            <li><strong>중용량 (심장):</strong> 5-10 mcg/kg/min (β 작용)</li>
+                            <li><strong>고용량 (혈관):</strong> 10-20 mcg/kg/min (α 작용)</li>
+                            <li><strong>최대 용량:</strong> 20-50 mcg/kg/min</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Norepinephrine Panel -->
+                <div id="norepinephrine" class="tab-panel">
+                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="norepi_weight" class="input-label block mb-1">환자 체중 (kg)</label>
+                            <input type="number" id="norepi_weight" class="input-field" value="70">
+                        </div>
+                        <div>
+                            <label for="norepi_dose" class="input-label block mb-1">목표 용량 (mcg/kg/min)</label>
+                            <input type="number" id="norepi_dose" class="input-field" value="0.1">
+                        </div>
+                        <div>
+                            <label for="norepi_fluid" class="input-label block mb-1">총 수액량 (ml)</label>
+                            <input type="number" id="norepi_fluid" class="input-field" value="250">
+                        </div>
+                        <div>
+                            <label for="norepi_drug" class="input-label block mb-1">총 약물량 (mg)</label>
+                            <input type="number" id="norepi_drug" class="input-field" value="4">
+                        </div>
+                    </div>
+                    <div class="info-box">
+                        <h3>약물 정보 (Norepinephrine)</h3>
+                        <ul class="text-sm space-y-1">
+                            <li><strong>효과:</strong> 강력한 혈관 수축제 (α 작용), 패혈성 쇼크 등에서 1차 선택 약물</li>
+                            <li><strong>시작 용량:</strong> 0.05 - 0.1 mcg/kg/min</li>
+                            <li><strong>치료 용량:</strong> 0.1 - 2.0 mcg/kg/min (환자 반응에 따라 조절)</li>
+                            <li><strong>최대 용량:</strong> 정해진 상한은 없으나, 일반적으로 3 mcg/kg/min 이상은 고용량으로 간주</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Labetalol Panel -->
+                <div id="labetalol" class="tab-panel">
+                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="labe_dose" class="input-label block mb-1">목표 용량 (mg/min)</label>
+                            <input type="number" id="labe_dose" class="input-field" value="1">
+                        </div>
+                        <div>
+                            <label for="labe_fluid" class="input-label block mb-1">총 수액량 (ml)</label>
+                            <input type="number" id="labe_fluid" class="input-field" value="250">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label for="labe_drug" class="input-label block mb-1">총 약물량 (mg)</label>
+                            <input type="number" id="labe_drug" class="input-field" value="250">
+                        </div>
+                    </div>
+                    <div class="info-box">
+                        <h3>약물 정보 (Labetalol)</h3>
+                        <ul class="text-sm space-y-1">
+                            <li><strong>효과:</strong> α 및 β 아드레날린 수용체 차단제, 고혈압 응급증에 사용</li>
+                            <li><strong>시작 용량:</strong> 0.5 mg/min</li>
+                            <li><strong>치료 용량:</strong> 0.5 - 2.0 mg/min (목표 혈압에 따라 조절)</li>
+                            <li><strong>최대 누적 용량:</strong> 300 mg</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="calc-button" class="btn mt-8">주입 속도 계산</button>
+
+            <fieldset class="mt-8 bg-white">
+                <legend class="text-lg">계산 결과</legend>
+                <div id="result-text" class="p-4 text-center text-2xl font-bold text-green-700">결과가 여기에 표시됩니다.</div>
+            </fieldset>
+        </main>
+    </div>
+
+    <script>
+        let activeTab = 'dobutamine';
+
+        function changeTab(event, tabName) {
+            activeTab = tabName;
+            // Hide all panels
+            document.querySelectorAll('.tab-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            // Deactivate all buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            // Show selected panel and activate button
+            document.getElementById(tabName).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        document.getElementById('calc-button').addEventListener('click', () => {
+            let infusionRate = 0;
+
+            if (activeTab === 'labetalol') {
+                const dose = parseFloat(document.getElementById('labe_dose').value); // mg/min
+                const fluid = parseFloat(document.getElementById('labe_fluid').value); // ml
+                const drug = parseFloat(document.getElementById('labe_drug').value); // mg
+
+                if (isNaN(dose) || isNaN(fluid) || isNaN(drug) || fluid <= 0 || drug <= 0) {
+                    alert("모든 값을 올바르게 입력해주세요.");
+                    return;
+                }
+                // Formula: (Dose [mg/min] * 60 [min/hr]) / (Total Drug [mg] / Total Fluid [ml])
+                const drugConcentration = drug / fluid; // mg/ml
+                infusionRate = (dose * 60) / drugConcentration; // ml/hr
+            } else {
+                // For Dobutamine, Dopamine, Norepinephrine
+                let prefix = '';
+                if (activeTab === 'dobutamine') prefix = 'dobu';
+                else if (activeTab === 'dopamine') prefix = 'dopa';
+                else if (activeTab === 'norepinephrine') prefix = 'norepi';
+
+                const weight = parseFloat(document.getElementById(`${prefix}_weight`).value);
+                const dose = parseFloat(document.getElementById(`${prefix}_dose`).value);
+                const fluid = parseFloat(document.getElementById(`${prefix}_fluid`).value);
+                const drug = parseFloat(document.getElementById(`${prefix}_drug`).value);
+
+                if (isNaN(weight) || isNaN(dose) || isNaN(fluid) || isNaN(drug) || weight <= 0 || fluid <= 0 || drug <= 0) {
+                    alert("모든 값을 올바르게 입력해주세요.");
+                    return;
+                }
+                // Formula: (Dose [mcg/kg/min] * Weight [kg] * 60 [min/hr]) / (Total Drug [mg] * 1000 [mcg/mg] / Total Fluid [ml])
+                const drugConcentration = (drug * 1000) / fluid; // mcg/ml
+                infusionRate = (dose * weight * 60) / drugConcentration; // ml/hr
+            }
+
+            const resultText = document.getElementById('result-text');
+            if (isFinite(infusionRate)) {
+                 resultText.textContent = `주입 속도: ${infusionRate.toFixed(2)} ml/hr`;
+            } else {
+                 resultText.textContent = "계산 오류: 입력 값을 확인해주세요.";
+            }
+        });
+    </script>
+</body>
+</html>

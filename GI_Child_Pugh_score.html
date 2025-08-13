@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Child-Pugh Score Calculator for Liver Cirrhosis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        fieldset { border: 1px solid #CBD5E0; border-radius: 0.5rem; padding: 1rem; }
+        legend { font-weight: 600; padding: 0 0.5rem; color: #2D3748; }
+        .btn { background-color: #2C7A7B; color: white; font-weight: bold; padding: 0.75rem 1rem; border-radius: 0.375rem; width: 100%; transition: background-color 0.2s; }
+        .btn:hover { background-color: #285E61; }
+        .radio-group { margin-top: 0.5rem; }
+        .radio-label { display: inline-flex; align-items: center; margin-right: 1rem; cursor: pointer; }
+        .radio-label input { margin-right: 0.5rem; }
+        .criteria-box { margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #E2E8F0; }
+        .criteria-box:last-child { border-bottom: none; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-3xl">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-700">Child-Pugh Score Calculator</h1>
+            <p class="text-md text-gray-500 mt-2">간경변 환자 예후 예측</p>
+        </header>
+
+        <main id="calculator-form">
+            <fieldset>
+                <legend class="text-lg">평가 기준</legend>
+                <div class="mt-4">
+                    <!-- Total Bilirubin -->
+                    <div class="criteria-box">
+                        <p class="font-semibold text-gray-700">총 빌리루빈 (Total Bilirubin)</p>
+                        <div class="radio-group">
+                            <label class="radio-label"><input type="radio" name="bilirubin" value="1" checked> < 2 mg/dL</label>
+                            <label class="radio-label"><input type="radio" name="bilirubin" value="2"> 2 - 3 mg/dL</label>
+                            <label class="radio-label"><input type="radio" name="bilirubin" value="3"> > 3 mg/dL</label>
+                        </div>
+                    </div>
+                    <!-- Serum Albumin -->
+                    <div class="criteria-box">
+                        <p class="font-semibold text-gray-700">혈청 알부민 (Serum Albumin)</p>
+                        <div class="radio-group">
+                            <label class="radio-label"><input type="radio" name="albumin" value="1" checked> > 3.5 g/dL</label>
+                            <label class="radio-label"><input type="radio" name="albumin" value="2"> 2.8 - 3.5 g/dL</label>
+                            <label class="radio-label"><input type="radio" name="albumin" value="3"> < 2.8 g/dL</label>
+                        </div>
+                    </div>
+                    <!-- INR -->
+                    <div class="criteria-box">
+                        <p class="font-semibold text-gray-700">INR</p>
+                        <div class="radio-group">
+                            <label class="radio-label"><input type="radio" name="inr" value="1" checked> < 1.7</label>
+                            <label class="radio-label"><input type="radio" name="inr" value="2"> 1.7 - 2.3</label>
+                            <label class="radio-label"><input type="radio" name="inr" value="3"> > 2.3</label>
+                        </div>
+                    </div>
+                    <!-- Ascites -->
+                    <div class="criteria-box">
+                        <p class="font-semibold text-gray-700">복수 (Ascites)</p>
+                        <div class="radio-group">
+                            <label class="radio-label"><input type="radio" name="ascites" value="1" checked> 없음 (None)</label>
+                            <label class="radio-label"><input type="radio" name="ascites" value="2"> 경도 (Slight/Diuretic responsive)</label>
+                            <label class="radio-label"><input type="radio" name="ascites" value="3"> 중등도 이상 (Moderate/Diuretic refractory)</label>
+                        </div>
+                    </div>
+                    <!-- Encephalopathy -->
+                    <div class="criteria-box">
+                        <p class="font-semibold text-gray-700">간성 뇌증 (Encephalopathy)</p>
+                        <div class="radio-group">
+                            <label class="radio-label"><input type="radio" name="encephalopathy" value="1" checked> 없음 (None)</label>
+                            <label class="radio-label"><input type="radio" name="encephalopathy" value="2"> Grade 1-2 (경도)</label>
+                            <label class="radio-label"><input type="radio" name="encephalopathy" value="3"> Grade 3-4 (중증)</label>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+            
+            <button id="calc-button" class="btn mt-8">점수 계산</button>
+
+            <fieldset class="mt-8">
+                <legend class="text-lg">계산 결과</legend>
+                <div id="result-text" class="mt-2 p-4 bg-gray-100 rounded-lg min-h-[150px] whitespace-pre-wrap font-mono text-base">결과가 여기에 표시됩니다.</div>
+            </fieldset>
+        </main>
+    </div>
+
+    <script>
+        document.getElementById('calc-button').addEventListener('click', () => {
+            const criteria = ["bilirubin", "albumin", "inr", "ascites", "encephalopathy"];
+            let score = 0;
+            
+            criteria.forEach(criterion => {
+                const value = document.querySelector(`input[name="${criterion}"]:checked`).value;
+                score += parseInt(value, 10);
+            });
+
+            let childPughClass = "";
+            let survival1yr = "";
+            let survival2yr = "";
+
+            if (score <= 6) {
+                childPughClass = "A";
+                survival1yr = "100%";
+                survival2yr = "85%";
+            } else if (score <= 9) {
+                childPughClass = "B";
+                survival1yr = "81%";
+                survival2yr = "57%";
+            } else {
+                childPughClass = "C";
+                survival1yr = "45%";
+                survival2yr = "35%";
+            }
+
+            const resultStr = 
+                `Child-Pugh Score: ${score} 점\n` +
+                `Child-Pugh Class: ${childPughClass}\n` +
+                `------------------------------------\n` +
+                `1년 예측 생존율: ${survival1yr}\n` +
+                `2년 예측 생존율: ${survival2yr}\n\n` +
+                `Class C로 갈수록 간 기능이 심각하게 저하되었음을 의미합니다.`;
+
+            document.getElementById('result-text').textContent = resultStr;
+        });
+    </script>
+</body>
+</html>

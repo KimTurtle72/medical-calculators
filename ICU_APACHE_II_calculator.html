@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APACHE II Score Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .input-label {
+            font-weight: 500;
+            color: #4A5568;
+        }
+        .input-field {
+            border-radius: 0.375rem;
+            border: 1px solid #E2E8F0;
+            padding: 0.5rem 0.75rem;
+            width: 100%;
+            transition: border-color 0.2s;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #4299E1;
+            box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.5);
+        }
+        .btn {
+            background-color: #4299E1;
+            color: white;
+            font-weight: bold;
+            padding: 0.75rem 1rem;
+            border-radius: 0.375rem;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+        .btn:hover {
+            background-color: #3182CE;
+        }
+        fieldset {
+            border: 1px solid #CBD5E0;
+            border-radius: 0.5rem;
+            padding: 1rem;
+        }
+        legend {
+            font-weight: 600;
+            padding: 0 0.5rem;
+            color: #2D3748;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-4xl">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-700">APACHE II Score Calculator</h1>
+            <p class="text-md text-gray-500 mt-2">중환자실 입실 후 24시간 내 가장 나빴던 수치를 입력하세요.</p>
+        </header>
+
+        <main id="calculator-form">
+            <!-- 급성 생리 점수 항목 -->
+            <fieldset class="mb-6">
+                <legend class="text-lg">급성 생리 점수 (Acute Physiology Score)</legend>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 mt-4">
+                    <div>
+                        <label for="temp" class="input-label block mb-1">1. 직장 체온 (°C)</label>
+                        <input type="number" id="temp" class="input-field" value="37.0" step="0.1">
+                    </div>
+                    <div>
+                        <label for="map" class="input-label block mb-1">2. 평균 동맥압 (mmHg)</label>
+                        <input type="number" id="map" class="input-field" value="90">
+                    </div>
+                    <div>
+                        <label for="hr" class="input-label block mb-1">3. 심박수 (bpm)</label>
+                        <input type="number" id="hr" class="input-field" value="80">
+                    </div>
+                    <div>
+                        <label for="rr" class="input-label block mb-1">4. 호흡수 (bpm)</label>
+                        <input type="number" id="rr" class="input-field" value="16">
+                    </div>
+                    <div>
+                        <label for="fio2" class="input-label block mb-1">5. FiO₂ (예: 0.21)</label>
+                        <input type="number" id="fio2" class="input-field" value="0.21" step="0.01" oninput="toggleOxygenation()">
+                    </div>
+                    <div>
+                        <label for="pao2" class="input-label block mb-1">   - PaO₂ (mmHg, FiO₂ &lt; 0.5)</label>
+                        <input type="number" id="pao2" class="input-field" value="80">
+                    </div>
+                    <div>
+                        <label for="aado2" class="input-label block mb-1">   - A-aDO₂ (mmHg, FiO₂ ≥ 0.5)</label>
+                        <input type="number" id="aado2" class="input-field" value="100" disabled>
+                    </div>
+                    <div>
+                        <label for="ph" class="input-label block mb-1">6. 동맥혈 pH</label>
+                        <input type="number" id="ph" class="input-field" value="7.40" step="0.01">
+                    </div>
+                    <div>
+                        <label for="na" class="input-label block mb-1">7. 혈청 Na (mEq/L)</label>
+                        <input type="number" id="na" class="input-field" value="140">
+                    </div>
+                    <div>
+                        <label for="k" class="input-label block mb-1">8. 혈청 K (mEq/L)</label>
+                        <input type="number" id="k" class="input-field" value="4.0" step="0.1">
+                    </div>
+                    <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-x-8">
+                         <div>
+                            <label for="creat" class="input-label block mb-1">9. 혈청 Cr (mg/dL)</label>
+                            <input type="number" id="creat" class="input-field" value="1.0" step="0.1">
+                        </div>
+                        <div class="flex items-end pb-2">
+                             <label class="flex items-center">
+                                <input type="checkbox" id="is_arf" class="h-5 w-5 text-blue-600 rounded">
+                                <span class="ml-2 text-gray-700">급성 신부전(ARF) 여부</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="hct" class="input-label block mb-1">10. 헤마토크리트 (%)</label>
+                        <input type="number" id="hct" class="input-field" value="40">
+                    </div>
+                    <div>
+                        <label for="wbc" class="input-label block mb-1">11. 백혈구 수 (x1000/mm³)</label>
+                        <input type="number" id="wbc" class="input-field" value="8.0" step="0.1">
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- GCS 항목 -->
+            <fieldset class="mb-6">
+                <legend class="text-lg">12. 글래스고 혼수 척도 (GCS)</legend>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-4 mt-4">
+                    <div>
+                        <label for="eye_score" class="input-label block mb-1">눈 반응 (E)</label>
+                        <select id="eye_score" class="input-field">
+                            <option value="4" selected>4: Spontaneous</option>
+                            <option value="3">3: To speech</option>
+                            <option value="2">2: To pain</option>
+                            <option value="1">1: None</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="verbal_score" class="input-label block mb-1">언어 반응 (V)</label>
+                        <select id="verbal_score" class="input-field">
+                            <option value="5" selected>5: Oriented</option>
+                            <option value="4">4: Confused</option>
+                            <option value="3">3: Inappropriate words</option>
+                            <option value="2">2: Incomprehensible sounds</option>
+                            <option value="1">1: None</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="motor_score" class="input-label block mb-1">운동 반응 (M)</label>
+                        <select id="motor_score" class="input-field">
+                            <option value="6" selected>6: Obeys commands</option>
+                            <option value="5">5: Localizes to pain</option>
+                            <option value="4">4: Withdrawal from pain</option>
+                            <option value="3">3: Abnormal flexion</option>
+                            <option value="2">2: Abnormal extension</option>
+                            <option value="1">1: None</option>
+                        </select>
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- 기타 항목 -->
+            <fieldset class="mb-6">
+                <legend class="text-lg">기타 점수 항목</legend>
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 mt-4">
+                    <div>
+                        <label for="age" class="input-label block mb-1">13. 나이 (세)</label>
+                        <input type="number" id="age" class="input-field" value="50">
+                    </div>
+                    <div class="flex items-center pt-6">
+                        <label class="flex items-center mr-6">
+                            <input type="checkbox" id="has_chronic" class="h-5 w-5 text-blue-600 rounded">
+                            <span class="ml-2 text-gray-700">14. 심각한 만성질환 여부</span>
+                        </label>
+                        <div id="admission_type_group">
+                            <label class="mr-4"><input type="radio" name="admission_type" value="1" checked> 비수술/응급수술</label>
+                            <label><input type="radio" name="admission_type" value="2"> 정규수술</label>
+                        </div>
+                    </div>
+                 </div>
+            </fieldset>
+            
+            <button id="calc-button" class="btn">APACHE II 점수 계산</button>
+
+            <fieldset class="mt-8">
+                <legend class="text-lg">계산 결과</legend>
+                <div id="result-text" class="mt-2 p-4 bg-gray-100 rounded-lg min-h-[150px] whitespace-pre-wrap font-mono text-sm">결과가 여기에 표시됩니다.</div>
+            </fieldset>
+        </main>
+    </div>
+
+    <script>
+        // --- 계산 로직 ---
+        function getScoreFromRanges(value, ranges) {
+            for (const [score, low, high] of ranges) {
+                if (value >= low && value <= high) {
+                    return score;
+                }
+            }
+            return 0;
+        }
+
+        function getTemperatureScore(temp) {
+            const ranges = [[4, 41, 99], [3, 39, 40.9], [2, 32, 33.9], [1, 38.5, 38.9], [1, 34, 35.9], [0, 36, 38.4], [3, 30, 31.9], [4, 0, 29.9]];
+            return getScoreFromRanges(temp, ranges);
+        }
+
+        function getMapScore(mapVal) {
+            const ranges = [[4, 160, 999], [3, 130, 159], [2, 110, 129], [2, 50, 69], [0, 70, 109], [4, 0, 49]];
+            return getScoreFromRanges(mapVal, ranges);
+        }
+
+        function getHrScore(hr) {
+            const ranges = [[4, 180, 999], [3, 140, 179], [2, 110, 139], [2, 40, 54], [0, 70, 109], [3, 55, 69], [4, 0, 39]];
+            return getScoreFromRanges(hr, ranges);
+        }
+
+        function getRrScore(rr) {
+            const ranges = [[4, 50, 999], [3, 35, 49], [1, 25, 34], [1, 10, 11], [0, 12, 24], [2, 6, 9], [4, 0, 5]];
+            return getScoreFromRanges(rr, ranges);
+        }
+
+        function getOxygenationScore(fio2, pao2, aado2) {
+            if (fio2 >= 0.5) {
+                const ranges = [[4, 500, 999], [3, 350, 499], [2, 200, 349], [0, 0, 199]];
+                return getScoreFromRanges(aado2, ranges);
+            } else {
+                const ranges = [[4, 0, 55], [3, 55.1, 60], [1, 60.1, 70], [0, 70.1, 999]];
+                return getScoreFromRanges(pao2, ranges);
+            }
+        }
+
+        function getPhScore(ph) {
+            const ranges = [[4, 7.7, 9], [3, 7.6, 7.69], [1, 7.5, 7.59], [0, 7.33, 7.49], [2, 7.25, 7.32], [3, 7.15, 7.24], [4, 0, 7.14]];
+            return getScoreFromRanges(ph, ranges);
+        }
+
+        function getSodiumScore(na) {
+            const ranges = [[4, 180, 999], [3, 160, 179], [2, 155, 159], [1, 150, 154], [0, 130, 149], [2, 120, 129], [3, 111, 119], [4, 0, 110]];
+            return getScoreFromRanges(na, ranges);
+        }
+
+        function getPotassiumScore(k) {
+            const ranges = [[4, 7, 99], [3, 6, 6.9], [1, 5.5, 5.9], [0, 3.5, 5.4], [1, 3, 3.4], [2, 2.5, 2.9], [4, 0, 2.4]];
+            return getScoreFromRanges(k, ranges);
+        }
+
+        function getCreatinineScore(creat, isArf) {
+            const ranges = [[4, 3.5, 99], [3, 2, 3.4], [2, 1.5, 1.9], [0, 0.6, 1.4], [2, 0, 0.5]];
+            const score = getScoreFromRanges(creat, ranges);
+            return isArf ? score * 2 : score;
+        }
+
+        function getHctScore(hct) {
+            const ranges = [[4, 60, 100], [2, 50, 59.9], [1, 46, 49.9], [0, 30, 45.9], [2, 20, 29.9], [4, 0, 19.9]];
+            return getScoreFromRanges(hct, ranges);
+        }
+
+        function getWbcScore(wbc) {
+            const ranges = [[4, 40, 999], [2, 20, 39.9], [1, 15, 19.9], [0, 3, 14.9], [2, 1, 2.9], [4, 0, 0.9]];
+            return getScoreFromRanges(wbc, ranges);
+        }
+
+        function getGcsApacheScore(gcs) {
+            return 15 - gcs;
+        }
+
+        function getAgeScore(age) {
+            const ranges = [[6, 75, 999], [5, 65, 74], [3, 55, 64], [2, 45, 54], [0, 0, 44]];
+            return getScoreFromRanges(age, ranges);
+        }
+
+        function getChronicHealthScore(hasChronic, admissionType) {
+            if (!hasChronic) return 0;
+            return admissionType === '1' ? 5 : 2;
+        }
+
+        function getInterpretation(score) {
+            const mortalityMap = {
+                "0-4": "약 4%", "5-9": "약 8%", "10-14": "약 15%",
+                "15-19": "약 25%", "20-24": "약 40%", "25-29": "약 55%",
+                "30-34": "약 73%", "35-100": "약 85%"
+            };
+            let predictedMortality = "알 수 없음";
+            for (const range in mortalityMap) {
+                const [low, high] = range.split('-').map(Number);
+                if (score >= low && score <= high) {
+                    predictedMortality = mortalityMap[range];
+                    break;
+                }
+            }
+            return `점수가 높을수록 환자의 상태가 중하고 사망 위험이 높음을 의미합니다.\n` +
+                   `일반적인 예측 사망률: ${predictedMortality}\n\n` +
+                   `주의: 이 수치는 통계적 예측이며, 개별 환자의 예후와는 다를 수 있습니다.`;
+        }
+
+        // --- 이벤트 핸들러 ---
+        document.getElementById('calc-button').addEventListener('click', () => {
+            try {
+                const values = {};
+                const ids = ["temp", "map", "hr", "rr", "fio2", "pao2", "aado2", "ph", "na", "k", "creat", "hct", "wbc", "age", "eye_score", "verbal_score", "motor_score"];
+                ids.forEach(id => {
+                    values[id] = parseFloat(document.getElementById(id).value);
+                });
+                
+                values.is_arf = document.getElementById('is_arf').checked;
+                values.has_chronic = document.getElementById('has_chronic').checked;
+                values.admission_type = document.querySelector('input[name="admission_type"]:checked').value;
+
+                const gcs = values.eye_score + values.verbal_score + values.motor_score;
+
+                const apsScore = 
+                    getTemperatureScore(values.temp) +
+                    getMapScore(values.map) +
+                    getHrScore(values.hr) +
+                    getRrScore(values.rr) +
+                    getOxygenationScore(values.fio2, values.pao2, values.aado2) +
+                    getPhScore(values.ph) +
+                    getSodiumScore(values.na) +
+                    getPotassiumScore(values.k) +
+                    getCreatinineScore(values.creat, values.is_arf) +
+                    getHctScore(values.hct) +
+                    getWbcScore(values.wbc) +
+                    getGcsApacheScore(gcs);
+                
+                const agePoints = getAgeScore(values.age);
+                const chronicPoints = getChronicHealthScore(values.has_chronic, values.admission_type);
+                const totalScore = apsScore + agePoints + chronicPoints;
+
+                const resultStr = 
+                    `계산된 GCS 점수: ${gcs} 점\n\n` +
+                    `급성 생리 점수 (APS): ${apsScore} 점\n` +
+                    `나이 점수: ${agePoints} 점\n` +
+                    `만성 건강 점수: ${chronicPoints} 점\n` +
+                    `------------------------------------\n` +
+                    `▶ 총 APACHE II 점수: ${totalScore} 점\n` +
+                    `------------------------------------\n\n` +
+                    `--- 점수 의미 ---\n` +
+                    getInterpretation(totalScore);
+
+                document.getElementById('result-text').textContent = resultStr;
+
+            } catch (e) {
+                document.getElementById('result-text').textContent = `오류가 발생했습니다. 모든 값을 올바르게 입력했는지 확인해주세요.\n\n오류 내용: ${e.message}`;
+            }
+        });
+
+        function toggleOxygenation() {
+            const fio2 = parseFloat(document.getElementById('fio2').value);
+            const pao2Input = document.getElementById('pao2');
+            const aado2Input = document.getElementById('aado2');
+
+            if (fio2 < 0.5) {
+                pao2Input.disabled = false;
+                pao2Input.style.backgroundColor = 'white';
+                aado2Input.disabled = true;
+                aado2Input.style.backgroundColor = '#F1F5F9';
+            } else {
+                pao2Input.disabled = true;
+                pao2Input.style.backgroundColor = '#F1F5F9';
+                aado2Input.disabled = false;
+                aado2Input.style.backgroundColor = 'white';
+            }
+        }
+        
+        // 초기 로딩 시 한번 실행
+        window.onload = toggleOxygenation;
+    </script>
+</body>
+</html>

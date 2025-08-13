@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MELD Score Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        fieldset { border: 1px solid #CBD5E0; border-radius: 0.5rem; padding: 1rem; }
+        legend { font-weight: 600; padding: 0 0.5rem; color: #2D3748; }
+        .input-label { font-weight: 500; color: #4A5568; }
+        .input-field { border-radius: 0.375rem; border: 1px solid #E2E8F0; padding: 0.5rem 0.75rem; width: 100%; transition: border-color 0.2s; }
+        .input-field:focus { outline: none; border-color: #DD6B20; box-shadow: 0 0 0 2px rgba(221, 107, 32, 0.4); }
+        .btn { background-color: #DD6B20; color: white; font-weight: bold; padding: 0.75rem 1rem; border-radius: 0.375rem; width: 100%; transition: background-color 0.2s; }
+        .btn:hover { background-color: #C05621; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-2xl">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-700">MELD Score Calculator</h1>
+            <p class="text-md text-gray-500 mt-2">말기 간질환 환자 예후 예측</p>
+        </header>
+
+        <main id="calculator-form">
+            <fieldset>
+                <legend class="text-lg">평가 기준</legend>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 mt-4">
+                    <div>
+                        <label for="bilirubin" class="input-label block mb-1">혈청 빌리루빈 (mg/dL)</label>
+                        <input type="number" id="bilirubin" class="input-field" value="1.0" step="0.1">
+                    </div>
+                    <div>
+                        <label for="inr" class="input-label block mb-1">INR</label>
+                        <input type="number" id="inr" class="input-field" value="1.1" step="0.1">
+                    </div>
+                    <div>
+                        <label for="creatinine" class="input-label block mb-1">혈청 크레아티닌 (mg/dL)</label>
+                        <input type="number" id="creatinine" class="input-field" value="1.2" step="0.1">
+                    </div>
+                    <div>
+                        <label for="sodium" class="input-label block mb-1">혈청 나트륨 (mEq/L)</label>
+                        <input type="number" id="sodium" class="input-field" value="135">
+                    </div>
+                    <div class="md:col-span-2 flex items-center pt-2">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="dialysis" class="h-5 w-5 text-orange-600 rounded">
+                            <span class="ml-2 text-gray-700">최근 7일 내 2회 이상 투석 여부</span>
+                        </label>
+                    </div>
+                </div>
+            </fieldset>
+            
+            <button id="calc-button" class="btn mt-8">점수 계산</button>
+
+            <fieldset class="mt-8">
+                <legend class="text-lg">계산 결과</legend>
+                <div id="result-text" class="mt-2 p-4 bg-gray-100 rounded-lg min-h-[150px] whitespace-pre-wrap font-mono text-base">결과가 여기에 표시됩니다.</div>
+            </fieldset>
+        </main>
+    </div>
+
+    <script>
+        document.getElementById('calc-button').addEventListener('click', () => {
+            // 1. 값 가져오기 및 보정
+            let bili = parseFloat(document.getElementById('bilirubin').value);
+            let inr = parseFloat(document.getElementById('inr').value);
+            let creat = parseFloat(document.getElementById('creatinine').value);
+            let sodium = parseFloat(document.getElementById('sodium').value);
+            const isDialysis = document.getElementById('dialysis').checked;
+
+            if (isNaN(bili) || isNaN(inr) || isNaN(creat) || isNaN(sodium)) {
+                alert("모든 값을 올바르게 입력해주세요.");
+                return;
+            }
+
+            // MELD 계산 규칙 적용
+            if (isDialysis) {
+                creat = 4.0;
+            }
+            bili = Math.max(1.0, bili);
+            inr = Math.max(1.0, inr);
+            creat = Math.max(1.0, Math.min(4.0, creat));
+
+            // 2. MELD 점수 계산
+            const meldScoreRaw = 0.957 * Math.log(creat) + 0.378 * Math.log(bili) + 1.12 * Math.log(inr);
+            let meldScore = Math.round((meldScoreRaw * 10) + 6.43);
+
+            // 3. MELD-Na 점수 계산
+            let meldNaScore = meldScore;
+            if (meldScore > 11) {
+                // MELD-Na 계산 시 나트륨 보정
+                let adjustedSodium = Math.max(125, Math.min(137, sodium));
+                meldNaScore = Math.round(meldScore - adjustedSodium - (0.025 * meldScore * (140 - adjustedSodium)) + 140);
+            }
+            
+            // 4. 사망률 해석
+            const mortality = {
+                "40+": "71.3%", "30-39": "52.6%", "20-29": "19.6%",
+                "10-19": "6.0%", "<=9": "1.9%"
+            };
+            let mortalityRate = "N/A";
+            if (meldScore >= 40) mortalityRate = mortality["40+"];
+            else if (meldScore >= 30) mortalityRate = mortality["30-39"];
+            else if (meldScore >= 20) mortalityRate = mortality["20-29"];
+            else if (meldScore >= 10) mortalityRate = mortality["10-19"];
+            else mortalityRate = mortality["<=9"];
+
+            const resultStr = 
+                `MELD Score: ${meldScore} 점\n` +
+                `MELD-Na Score: ${meldNaScore} 점\n` +
+                `------------------------------------\n` +
+                `3개월 예측 사망률 (3-Month Predicted Mortality): ${mortalityRate}\n\n` +
+                `MELD 점수는 간이식 대기자 응급도 평가 등에 사용되는 중요한 지표입니다.`;
+
+            document.getElementById('result-text').textContent = resultStr;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ranson's Criteria Calculator for Acute Pancreatitis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        fieldset { border: 1px solid #CBD5E0; border-radius: 0.5rem; padding: 1rem; }
+        legend { font-weight: 600; padding: 0 0.5rem; color: #2D3748; }
+        .btn { background-color: #4299E1; color: white; font-weight: bold; padding: 0.75rem 1rem; border-radius: 0.375rem; width: 100%; transition: background-color 0.2s; }
+        .btn:hover { background-color: #3182CE; }
+        .checkbox-label { display: flex; align-items: center; margin-bottom: 0.75rem; padding: 0.5rem; border-radius: 0.375rem; transition: background-color 0.2s; }
+        .checkbox-label:hover { background-color: #F7FAFC; }
+        .checkbox-label input { height: 1.25rem; width: 1.25rem; text-blue-600; }
+        .checkbox-label span { margin-left: 0.75rem; color: #4A5568; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-3xl">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-700">Ranson's Criteria Calculator</h1>
+            <p class="text-md text-gray-500 mt-2">급성 췌장염 중증도 및 사망률 예측</p>
+        </header>
+
+        <main id="calculator-form">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 입원 시 기준 -->
+                <fieldset>
+                    <legend class="text-lg">입원 시 기준 (At Admission)</legend>
+                    <div class="mt-4">
+                        <label class="checkbox-label"><input type="checkbox" data-score="1"><span>나이 > 55세</span></label>
+                        <label class="checkbox-label"><input type="checkbox" data-score="1"><span>백혈구(WBC) > 16,000/mm³</span></label>
+                        <label class="checkbox-label"><input type="checkbox" data-score="1"><span>혈당(Glucose) > 200 mg/dL</span></label>
+                        <label class="checkbox-label"><input type="checkbox" data-score="1"><span>LDH > 350 IU/L</span></label>
+                        <label class="checkbox-label"><input type="checkbox" data-score="1"><span>AST > 250 IU/L</span></label>
+                    </div>
+                </fieldset>
+
+                <!-- 48시간 내 기준 -->
+                <fieldset>
+                    <legend class="text-lg">48시간 내 기준 (During Initial 48h)</legend>
+                    <div class="mt-4">
+                        <label class="checkbox-label"><input type="checkbox" data-score="1"><span>헤마토크리트(Hct) > 10% 감소</span></label>
+                        <label class="checkbox-label"><input type="checkbox" data-score="1"><span>BUN > 5 mg/dL 증가</span></label>
+                        <label class="checkbox-label"><input type="checkbox" data-score="1"><span>칼슘(Ca) < 8.0 mg/dL</span></label>
+                        <label class="checkbox-label"><input type="checkbox" data-score="1"><span>동맥혈 pO₂ < 60 mmHg</span></label>
+                        <label class="checkbox-label"><input type="checkbox" data-score="1"><span>염기 결핍(Base deficit) > 4 mEq/L</span></label>
+                        <label class="checkbox-label"><input type="checkbox" data-score="1"><span>수액 격리(Fluid sequestration) > 6 L</span></label>
+                    </div>
+                </fieldset>
+            </div>
+            
+            <button id="calc-button" class="btn mt-8">점수 계산</button>
+
+            <fieldset class="mt-8">
+                <legend class="text-lg">계산 결과</legend>
+                <div id="result-text" class="mt-2 p-4 bg-gray-100 rounded-lg min-h-[100px] whitespace-pre-wrap font-mono text-base">결과가 여기에 표시됩니다.</div>
+            </fieldset>
+        </main>
+    </div>
+
+    <script>
+        document.getElementById('calc-button').addEventListener('click', () => {
+            let score = 0;
+            const checkboxes = document.querySelectorAll('#calculator-form input[type="checkbox"]:checked');
+            checkboxes.forEach(checkbox => {
+                score += parseInt(checkbox.dataset.score, 10);
+            });
+
+            let mortalityRate = "";
+            if (score <= 2) mortalityRate = "약 1%";
+            else if (score <= 4) mortalityRate = "약 15%";
+            else if (score <= 6) mortalityRate = "약 40%";
+            else mortalityRate = "약 100%";
+
+            const resultStr = 
+                `Ranson's Score: ${score} 점\n` +
+                `------------------------------------\n` +
+                `예측 사망률 (Predicted Mortality): ${mortalityRate}\n\n` +
+                `점수가 높을수록 중증 췌장염의 가능성과 사망률이 높음을 의미합니다.`;
+
+            document.getElementById('result-text').textContent = resultStr;
+        });
+    </script>
+</body>
+</html>

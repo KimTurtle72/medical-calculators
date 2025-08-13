@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMI Calculator (체질량지수 계산기)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        fieldset { border: 1px solid #CBD5E0; border-radius: 0.5rem; padding: 1rem; }
+        legend { font-weight: 600; padding: 0 0.5rem; color: #2D3748; }
+        .input-label { font-weight: 500; color: #4A5568; }
+        .input-field { border-radius: 0.375rem; border: 1px solid #E2E8F0; padding: 0.5rem 0.75rem; width: 100%; transition: border-color 0.2s; }
+        .input-field:focus { outline: none; border-color: #319795; box-shadow: 0 0 0 2px rgba(49, 151, 149, 0.5); }
+        .btn { background-color: #319795; color: white; font-weight: bold; padding: 0.75rem 1rem; border-radius: 0.375rem; width: 100%; transition: background-color 0.2s; }
+        .btn:hover { background-color: #2C7A7B; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-xl">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-700">BMI 계산기 (체질량지수)</h1>
+            <p class="text-md text-gray-500 mt-2">키와 체중을 이용한 비만도 계산</p>
+        </header>
+
+        <main id="calculator-form">
+            <fieldset>
+                <legend class="text-lg">신체 정보 입력</legend>
+                <div class="grid grid-cols-1 gap-y-4 mt-4">
+                    <div>
+                        <label for="height" class="input-label block mb-1">키 (cm)</label>
+                        <input type="number" id="height" class="input-field" placeholder="예: 175">
+                    </div>
+                    <div>
+                        <label for="weight" class="input-label block mb-1">체중 (kg)</label>
+                        <input type="number" id="weight" class="input-field" placeholder="예: 70">
+                    </div>
+                </div>
+            </fieldset>
+            
+            <button id="calc-button" class="btn mt-8">BMI 계산</button>
+
+            <fieldset class="mt-8">
+                <legend class="text-lg">계산 결과</legend>
+                <div id="result-text" class="mt-2 p-4 bg-gray-100 rounded-lg min-h-[120px] whitespace-pre-wrap font-mono text-base">결과가 여기에 표시됩니다.</div>
+            </fieldset>
+        </main>
+    </div>
+
+    <script>
+        document.getElementById('calc-button').addEventListener('click', () => {
+            const height = parseFloat(document.getElementById('height').value);
+            const weight = parseFloat(document.getElementById('weight').value);
+
+            if (isNaN(height) || isNaN(weight) || height <= 0 || weight <= 0) {
+                alert("키와 체중을 올바르게 입력해주세요.");
+                return;
+            }
+
+            const heightInMeters = height / 100;
+            const bmi = weight / (heightInMeters * heightInMeters);
+
+            let category = "";
+            // WHO Asia-Pacific Standard
+            if (bmi < 18.5) {
+                category = "저체중";
+            } else if (bmi < 23) {
+                category = "정상";
+            } else if (bmi < 25) {
+                category = "과체중";
+            } else if (bmi < 30) {
+                category = "비만 (1단계)";
+            } else {
+                category = "고도 비만 (2단계 이상)";
+            }
+
+            const resultStr = 
+                `체질량지수 (BMI): ${bmi.toFixed(2)}\n` +
+                `------------------------------------\n` +
+                `결과: ${category}\n\n` +
+                `* WHO 아시아-태평양 기준에 따른 비만도입니다.`;
+
+            document.getElementById('result-text').textContent = resultStr;
+        });
+    </script>
+</body>
+</html>

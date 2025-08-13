@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glasgow Coma Scale (GCS) Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        fieldset { border: 1px solid #CBD5E0; border-radius: 0.5rem; padding: 1rem; }
+        legend { font-weight: 600; padding: 0 0.5rem; color: #2D3748; }
+        .input-label { font-weight: 500; color: #4A5568; }
+        .select-field { border-radius: 0.375rem; border: 1px solid #E2E8F0; padding: 0.5rem 0.75rem; width: 100%; -webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem; }
+        .select-field:focus { outline: none; border-color: #48BB78; box-shadow: 0 0 0 2px rgba(72, 187, 120, 0.5); }
+        .btn { background-color: #48BB78; color: white; font-weight: bold; padding: 0.75rem 1rem; border-radius: 0.375rem; width: 100%; transition: background-color 0.2s; }
+        .btn:hover { background-color: #38A169; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-2xl">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-700">Glasgow Coma Scale (GCS) Calculator</h1>
+            <p class="text-md text-gray-500 mt-2">의식 수준 평가 도구</p>
+        </header>
+
+        <main id="calculator-form">
+            <fieldset>
+                <legend class="text-lg">평가 항목</legend>
+                <div class="grid grid-cols-1 gap-y-6 mt-4">
+                    <!-- Eye Opening Response -->
+                    <div>
+                        <label for="eye_score" class="input-label block mb-1">눈 반응 (Eye Opening Response)</label>
+                        <select id="eye_score" class="select-field">
+                            <option value="4">4: 스스로 눈을 뜬다 (Spontaneous)</option>
+                            <option value="3">3: 부르면 눈을 뜬다 (To speech)</option>
+                            <option value="2">2: 통증에 눈을 뜬다 (To pain)</option>
+                            <option value="1">1: 전혀 눈을 뜨지 않는다 (None)</option>
+                        </select>
+                    </div>
+                    <!-- Verbal Response -->
+                    <div>
+                        <label for="verbal_score" class="input-label block mb-1">언어 반응 (Verbal Response)</label>
+                        <select id="verbal_score" class="select-field">
+                            <option value="5">5: 지남력이 있고 정상 대화 (Oriented)</option>
+                            <option value="4">4: 혼란스러운 대화 (Confused)</option>
+                            <option value="3">3: 부적절한 단어 사용 (Inappropriate words)</option>
+                            <option value="2">2: 이해할 수 없는 소리 (Incomprehensible sounds)</option>
+                            <option value="1">1: 전혀 소리를 내지 않음 (None)</option>
+                        </select>
+                    </div>
+                    <!-- Motor Response -->
+                    <div>
+                        <label for="motor_score" class="input-label block mb-1">운동 반응 (Motor Response)</label>
+                        <select id="motor_score" class="select-field">
+                            <option value="6">6: 지시에 따름 (Obeys commands)</option>
+                            <option value="5">5: 통증에 의도적 반응 (Localizes to pain)</option>
+                            <option value="4">4: 통증에 움츠리며 피함 (Withdrawal from pain)</option>
+                            <option value="3">3: 비정상적 굴곡 반응 (Abnormal flexion)</option>
+                            <option value="2">2: 비정상적 신전 반응 (Abnormal extension)</option>
+                            <option value="1">1: 전혀 움직이지 않음 (None)</option>
+                        </select>
+                    </div>
+                </div>
+            </fieldset>
+            
+            <button id="calc-button" class="btn mt-8">점수 계산</button>
+
+            <fieldset class="mt-8">
+                <legend class="text-lg">계산 결과</legend>
+                <div id="result-text" class="mt-2 p-4 bg-gray-100 rounded-lg min-h-[120px] whitespace-pre-wrap font-mono text-base">결과가 여기에 표시됩니다.</div>
+            </fieldset>
+        </main>
+    </div>
+
+    <script>
+        document.getElementById('calc-button').addEventListener('click', () => {
+            const eyeScore = parseInt(document.getElementById('eye_score').value, 10);
+            const verbalScore = parseInt(document.getElementById('verbal_score').value, 10);
+            const motorScore = parseInt(document.getElementById('motor_score').value, 10);
+
+            const totalScore = eyeScore + verbalScore + motorScore;
+
+            let interpretation = "";
+            if (totalScore >= 13) {
+                interpretation = "경증 두부 손상 (Mild Head Injury)";
+            } else if (totalScore >= 9) {
+                interpretation = "중등도 두부 손상 (Moderate Head Injury)";
+            } else { // score <= 8
+                interpretation = "중증 두부 손상 (Severe Head Injury)";
+            }
+
+            const resultStr = 
+                `GCS Score: ${totalScore} 점 (E${eyeScore}V${verbalScore}M${motorScore})\n` +
+                `------------------------------------\n` +
+                `해석: ${interpretation}\n\n` +
+                `* 8점 이하는 일반적으로 심각한 의식 저하 상태를 의미하며, 기관 삽관을 고려할 수 있습니다.`;
+
+            document.getElementById('result-text').textContent = resultStr;
+        });
+    </script>
+</body>
+</html>

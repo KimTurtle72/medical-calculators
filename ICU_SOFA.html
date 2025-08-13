@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOFA Score Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        fieldset { border: 1px solid #CBD5E0; border-radius: 0.5rem; padding: 1rem; }
+        legend { font-weight: 600; padding: 0 0.5rem; color: #2D3748; }
+        .btn { background-color: #718096; color: white; font-weight: bold; padding: 0.75rem 1rem; border-radius: 0.375rem; width: 100%; transition: background-color 0.2s; }
+        .btn:hover { background-color: #4A5568; }
+        .radio-group, .input-group { margin-top: 0.5rem; }
+        .radio-label { display: flex; align-items: center; padding: 0.5rem; cursor: pointer; border-radius: 0.25rem; }
+        .radio-label:hover { background-color: #F7FAFC; }
+        .radio-label input { margin-right: 0.75rem; }
+        .criteria-box { margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid #E2E8F0; }
+        .criteria-box:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0;}
+        .points { font-weight: bold; margin-right: 1rem; width: 4rem; text-align: right; color: #4A5568;}
+        .input-field { border-radius: 0.375rem; border: 1px solid #E2E8F0; padding: 0.5rem 0.75rem; width: 100%; }
+        .select-field { border-radius: 0.375rem; border: 1px solid #E2E8F0; padding: 0.5rem 0.75rem; width: 100%; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-3xl">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-700">SOFA Score Calculator</h1>
+            <p class="text-md text-gray-500 mt-2">Sequential Organ Failure Assessment</p>
+        </header>
+
+        <main id="calculator-form">
+            <fieldset>
+                <legend class="text-lg">장기 기능 평가 (24시간 내 가장 나쁜 수치)</legend>
+                <div class="mt-4">
+                    <!-- Respiration -->
+                    <div class="criteria-box">
+                        <p class="font-semibold text-gray-700">1. 호흡 (Respiration)</p>
+                        <div class="input-group grid grid-cols-2 gap-4 mt-2">
+                            <div>
+                                <label for="pao2" class="text-sm font-medium">PaO₂ (mmHg)</label>
+                                <input type="number" id="pao2" class="input-field" value="90">
+                            </div>
+                            <div>
+                                <label for="fio2" class="text-sm font-medium">FiO₂ (예: 0.21)</label>
+                                <input type="number" id="fio2" class="input-field" value="0.21" step="0.01">
+                            </div>
+                            <div class="col-span-2 flex items-center">
+                                <input type="checkbox" id="respiratory_support" class="h-4 w-4 rounded mr-2">
+                                <label for="respiratory_support" class="text-sm">호흡 보조 (기계 환기 등)</label>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Coagulation -->
+                    <div class="criteria-box">
+                        <p class="font-semibold text-gray-700">2. 혈액 응고 (Coagulation) - 혈소판 (Platelets, x10³/μL)</p>
+                        <div class="radio-group">
+                            <label class="radio-label"><input type="radio" name="coagulation" value="0" checked><span class="points">0점</span><span>≥ 150</span></label>
+                            <label class="radio-label"><input type="radio" name="coagulation" value="1"><span class="points">1점</span><span>< 150</span></label>
+                            <label class="radio-label"><input type="radio" name="coagulation" value="2"><span class="points">2점</span><span>< 100</span></label>
+                            <label class="radio-label"><input type="radio" name="coagulation" value="3"><span class="points">3점</span><span>< 50</span></label>
+                            <label class="radio-label"><input type="radio" name="coagulation" value="4"><span class="points">4점</span><span>< 20</span></label>
+                        </div>
+                    </div>
+                    <!-- Liver -->
+                    <div class="criteria-box">
+                        <p class="font-semibold text-gray-700">3. 간 (Liver) - 빌리루빈 (Bilirubin, mg/dL)</p>
+                        <div class="radio-group">
+                            <label class="radio-label"><input type="radio" name="liver" value="0" checked><span class="points">0점</span><span>< 1.2</span></label>
+                            <label class="radio-label"><input type="radio" name="liver" value="1"><span class="points">1점</span><span>1.2 - 1.9</span></label>
+                            <label class="radio-label"><input type="radio" name="liver" value="2"><span class="points">2점</span><span>2.0 - 5.9</span></label>
+                            <label class="radio-label"><input type="radio" name="liver" value="3"><span class="points">3점</span><span>6.0 - 11.9</span></label>
+                            <label class="radio-label"><input type="radio" name="liver" value="4"><span class="points">4점</span><span>≥ 12.0</span></label>
+                        </div>
+                    </div>
+                    <!-- Cardiovascular -->
+                    <div class="criteria-box">
+                        <p class="font-semibold text-gray-700">4. 심혈관계 (Cardiovascular) - 혈압 및 혈압상승제</p>
+                        <div class="radio-group">
+                            <label class="radio-label"><input type="radio" name="cardiovascular" value="0" checked><span class="points">0점</span><span>MAP ≥ 70 mmHg</span></label>
+                            <label class="radio-label"><input type="radio" name="cardiovascular" value="1"><span class="points">1점</span><span>MAP < 70 mmHg</span></label>
+                            <label class="radio-label"><input type="radio" name="cardiovascular" value="2"><span class="points">2점</span><span>Dopamine ≤ 5 또는 Dobutamine (모든 용량)</span></label>
+                            <label class="radio-label"><input type="radio" name="cardiovascular" value="3"><span class="points">3점</span><span>Dopamine > 5 또는 Epi/Norepi ≤ 0.1</span></label>
+                            <label class="radio-label"><input type="radio" name="cardiovascular" value="4"><span class="points">4점</span><span>Dopamine > 15 또는 Epi/Norepi > 0.1</span></label>
+                        </div>
+                    </div>
+                     <!-- CNS -->
+                    <div class="criteria-box">
+                        <p class="font-semibold text-gray-700">5. 중추신경계 (CNS) - GCS (Glasgow Coma Scale)</p>
+                        <div class="input-group grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+                            <div>
+                                <label for="eye_score" class="text-sm font-medium">Eye (눈 반응)</label>
+                                <select id="eye_score" class="select-field">
+                                    <option value="4">4: Spontaneous (스스로 뜸)</option>
+                                    <option value="3">3: To speech (부르면 뜸)</option>
+                                    <option value="2">2: To pain (통증에 뜸)</option>
+                                    <option value="1">1: None (뜨지 않음)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="verbal_score" class="text-sm font-medium">Verbal (언어 반응)</label>
+                                <select id="verbal_score" class="select-field">
+                                    <option value="5">5: Oriented (지남력 있음)</option>
+                                    <option value="4">4: Confused (혼란스러움)</option>
+                                    <option value="3">3: Inappropriate (부적절한 단어)</option>
+                                    <option value="2">2: Incomprehensible (이해불가 소리)</option>
+                                    <option value="1">1: None (소리 없음)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="motor_score" class="text-sm font-medium">Motor (운동 반응)</label>
+                                <select id="motor_score" class="select-field">
+                                    <option value="6">6: Obeys commands (지시 따름)</option>
+                                    <option value="5">5: Localizes pain (통증에 의도적 반응)</option>
+                                    <option value="4">4: Withdrawal (움츠리며 피함)</option>
+                                    <option value="3">3: Abnormal flexion (비정상 굴곡)</option>
+                                    <option value="2">2: Abnormal extension (비정상 신전)</option>
+                                    <option value="1">1: None (움직임 없음)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Renal -->
+                    <div class="criteria-box">
+                        <p class="font-semibold text-gray-700">6. 신장 (Renal) - 크레아티닌 (mg/dL) 또는 소변량 (mL/day)</p>
+                        <div class="radio-group">
+                            <label class="radio-label"><input type="radio" name="renal" value="0" checked><span class="points">0점</span><span>Cr < 1.2</span></label>
+                            <label class="radio-label"><input type="radio" name="renal" value="1"><span class="points">1점</span><span>Cr 1.2 - 1.9</span></label>
+                            <label class="radio-label"><input type="radio" name="renal" value="2"><span class="points">2점</span><span>Cr 2.0 - 3.4</span></label>
+                            <label class="radio-label"><input type="radio" name="renal" value="3"><span class="points">3점</span><span>Cr 3.5 - 4.9 또는 소변량 < 500</span></label>
+                            <label class="radio-label"><input type="radio" name="renal" value="4"><span class="points">4점</span><span>Cr ≥ 5.0 또는 소변량 < 200</span></label>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+            
+            <button id="calc-button" class="btn mt-8">점수 계산</button>
+
+            <fieldset class="mt-8">
+                <legend class="text-lg">계산 결과</legend>
+                <div id="result-text" class="mt-2 p-4 bg-gray-100 rounded-lg min-h-[150px] whitespace-pre-wrap font-mono text-base">결과가 여기에 표시됩니다.</div>
+            </fieldset>
+        </main>
+    </div>
+
+    <script>
+        document.getElementById('calc-button').addEventListener('click', () => {
+            let score = 0;
+            let resultDetails = "";
+
+            // --- 1. Respiration ---
+            const pao2 = parseFloat(document.getElementById('pao2').value);
+            const fio2 = parseFloat(document.getElementById('fio2').value);
+            const support = document.getElementById('respiratory_support').checked;
+            if (isNaN(pao2) || isNaN(fio2) || fio2 <= 0) {
+                alert("PaO₂와 FiO₂ 값을 올바르게 입력해주세요.");
+                return;
+            }
+            const ratio = pao2 / fio2;
+            let respirationScore = 0;
+            if (ratio < 400) respirationScore = 1;
+            if (ratio < 300) respirationScore = 2;
+            if (ratio < 200 && support) respirationScore = 3;
+            if (ratio < 100 && support) respirationScore = 4;
+            score += respirationScore;
+            resultDetails += `호흡 점수: ${respirationScore} (PaO₂/FiO₂ = ${ratio.toFixed(1)})\n`;
+
+            // --- 2. Coagulation ---
+            const coagulationScore = parseInt(document.querySelector('input[name="coagulation"]:checked').value, 10);
+            score += coagulationScore;
+            resultDetails += `혈액 응고 점수: ${coagulationScore}\n`;
+
+            // --- 3. Liver ---
+            const liverScore = parseInt(document.querySelector('input[name="liver"]:checked').value, 10);
+            score += liverScore;
+            resultDetails += `간 점수: ${liverScore}\n`;
+
+            // --- 4. Cardiovascular ---
+            const cardiovascularScore = parseInt(document.querySelector('input[name="cardiovascular"]:checked').value, 10);
+            score += cardiovascularScore;
+            resultDetails += `심혈관계 점수: ${cardiovascularScore}\n`;
+
+            // --- 5. CNS ---
+            const eye = parseInt(document.getElementById('eye_score').value, 10);
+            const verbal = parseInt(document.getElementById('verbal_score').value, 10);
+            const motor = parseInt(document.getElementById('motor_score').value, 10);
+            const gcsTotal = eye + verbal + motor;
+            let cnsScore = 0;
+            if (gcsTotal <= 14) cnsScore = 1;
+            if (gcsTotal <= 12) cnsScore = 2;
+            if (gcsTotal <= 9) cnsScore = 3;
+            if (gcsTotal < 6) cnsScore = 4;
+            score += cnsScore;
+            resultDetails += `중추신경계 점수: ${cnsScore} (GCS Total = ${gcsTotal})\n`;
+            
+            // --- 6. Renal ---
+            const renalScore = parseInt(document.querySelector('input[name="renal"]:checked').value, 10);
+            score += renalScore;
+            resultDetails += `신장 점수: ${renalScore}\n`;
+            
+            // --- Final Interpretation ---
+            let mortalityRate = "";
+            if (score <= 1) { mortalityRate = "< 10%"; }
+            else if (score <= 3) { mortalityRate = "약 15%"; }
+            else if (score <= 5) { mortalityRate = "약 20%"; }
+            else if (score <= 7) { mortalityRate = "약 25%"; }
+            else if (score <= 9) { mortalityRate = "약 35%"; }
+            else if (score <= 11) { mortalityRate = "약 50%"; }
+            else if (score <= 14) { mortalityRate = "약 80%"; }
+            else { mortalityRate = "> 90%"; }
+
+            let interpretation = "";
+            let action = "";
+            if (score >= 2) {
+                interpretation = "패혈증으로 인한 장기 기능 장애가 의심됩니다.";
+                action = "Sepsis-3 정의에 따라, 감염이 의심되는 환자에서 SOFA 점수가 2점 이상 증가하는 것은 패혈증을 시사합니다. 즉각적인 패혈증 프로토콜(예: 혈액 배양, 항생제 투여, 수액 소생술 등) 적용을 고려해야 합니다.";
+            } else {
+                interpretation = "현재 심각한 장기 기능 장애의 증거는 적습니다.";
+                action = "지속적인 환자 모니터링이 필요합니다. 점수가 증가하는 추세는 예후 악화를 의미하므로 주의 깊게 관찰해야 합니다.";
+            }
+
+            const resultStr = 
+                `총 SOFA Score: ${score} 점\n` +
+                `------------------------------------\n` +
+                `${resultDetails}` +
+                `------------------------------------\n` +
+                `예측 사망률 (ICU Mortality): ${mortalityRate}\n\n` +
+                `[해석]\n${interpretation}\n\n` +
+                `[권고 조치]\n${action}`;
+
+            document.getElementById('result-text').textContent = resultStr;
+        });
+    </script>
+</body>
+</html>
